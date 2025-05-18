@@ -1,9 +1,8 @@
 import os
 import json
+import random
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_mail import Mail, Message
-from PIL import Image
-import numpy as np
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -61,23 +60,10 @@ BIRD_FACTS = {
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def process_image(image_data):
-    """Process image from memory"""
-    try:
-        img = Image.open(image_data)
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        img = img.resize((224, 224))
-        return img
-    except Exception as e:
-        print(f"Error processing image: {e}")
-        return None
-
 def get_demo_prediction():
     """Get a demo prediction for testing"""
-    species_idx = np.random.randint(0, len(bird_species))
-    confidence = round(np.random.uniform(0.85, 0.99), 3)
-    species_name = bird_species[species_idx]
+    species_name = random.choice(bird_species)
+    confidence = round(random.uniform(0.85, 0.99), 3)
     species_key = species_name.lower().replace(' ', '_')
     return species_name, confidence, species_key
 
@@ -99,11 +85,6 @@ def predict():
         return jsonify({'error': 'Invalid file type. Please upload JPG, PNG, or WebP images.'}), 400
     
     try:
-        # Process image directly from memory
-        img = process_image(file)
-        if img is None:
-            return jsonify({'error': 'Error processing image'}), 500
-        
         # Get demo prediction
         species, confidence, species_key = get_demo_prediction()
         
