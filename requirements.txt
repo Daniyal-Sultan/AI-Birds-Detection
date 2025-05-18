@@ -7,5 +7,4 @@ Flask-Mail==0.9.1
 gunicorn==21.2.0
 keras==2.15.0
 h5py==3.10.0
-scipy==1.11.0
-kaggle>=1.5.13 
+scipy==1.11.0 
