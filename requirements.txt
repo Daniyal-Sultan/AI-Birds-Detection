@@ -1,6 +1,10 @@
 Flask==3.0.0
+Werkzeug==3.0.1
 Pillow==10.1.0
 numpy==1.24.3
-Werkzeug==3.0.1
 Flask-Mail==0.9.1
-gunicorn==21.2.0 
+gunicorn==21.2.0
+click>=8.0.0
+itsdangerous>=2.0.0
+Jinja2>=3.0.0
+MarkupSafe>=2.0.0 

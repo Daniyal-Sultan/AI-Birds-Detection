@@ -6,7 +6,8 @@
             "use": "@vercel/python",
             "config": {
                 "maxLambdaSize": "15mb",
-                "runtime": "python3.9"
+                "runtime": "python3.9",
+                "installCommand": "pip install --no-cache-dir -r requirements.txt"
             }
         },
         {
@@ -28,6 +29,9 @@
         }
     ],
     "env": {
-        "PYTHONUNBUFFERED": "1"
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONPATH": ".",
+        "PIP_TARGET": ".",
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1"
     }
 } 

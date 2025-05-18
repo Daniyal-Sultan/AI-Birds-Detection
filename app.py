@@ -7,7 +7,6 @@ import numpy as np
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = '/tmp'  # Simplified path for Vercel
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size for faster processing
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
@@ -24,24 +23,15 @@ mail = Mail(app) if app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD'] 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
-# Create necessary directories
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs('static/uploads', exist_ok=True)
-
-# Load class names
-try:
-    with open('bird_classes.json', 'r') as f:
-        bird_species = json.load(f)
-except Exception as e:
-    print(f"Warning: Could not load classes: {e}")
-    bird_species = [
-        "ABBOTTS BABBLER", "ABBOTTS BOOBY", "ABYSSINIAN GROUND HORNBILL",
-        "AFRICAN CROWNED CRANE", "AFRICAN EMERALD CUCKOO", "AFRICAN FIREFINCH",
-        "AFRICAN OYSTER CATCHER", "AFRICAN PIED HORNBILL", "AFRICAN PYGMY GOOSE",
-        "ALBATROSS", "ALBERTS TOWHEE", "ALEXANDRINE PARAKEET", "ALPINE CHOUGH",
-        "ALTAMIRA YELLOWTHROAT", "AMERICAN AVOCET", "AMERICAN BITTERN",
-        "AMERICAN COOT", "AMERICAN FLAMINGO", "AMERICAN GOLDFINCH", "AMERICAN KESTREL"
-    ]
+# Hardcoded bird species list for serverless environment
+bird_species = [
+    "ABBOTTS BABBLER", "ABBOTTS BOOBY", "ABYSSINIAN GROUND HORNBILL",
+    "AFRICAN CROWNED CRANE", "AFRICAN EMERALD CUCKOO", "AFRICAN FIREFINCH",
+    "AFRICAN OYSTER CATCHER", "AFRICAN PIED HORNBILL", "AFRICAN PYGMY GOOSE",
+    "ALBATROSS", "ALBERTS TOWHEE", "ALEXANDRINE PARAKEET", "ALPINE CHOUGH",
+    "ALTAMIRA YELLOWTHROAT", "AMERICAN AVOCET", "AMERICAN BITTERN",
+    "AMERICAN COOT", "AMERICAN FLAMINGO", "AMERICAN GOLDFINCH", "AMERICAN KESTREL"
+]
 
 # Bird facts dictionary
 BIRD_FACTS = {
@@ -71,14 +61,14 @@ BIRD_FACTS = {
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def process_image(image_path):
-    """Process image for display"""
+def process_image(image_data):
+    """Process image from memory"""
     try:
-        with Image.open(image_path) as img:
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
-            img = img.resize((224, 224))
-            return img
+        img = Image.open(image_data)
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        img = img.resize((224, 224))
+        return img
     except Exception as e:
         print(f"Error processing image: {e}")
         return None
@@ -109,12 +99,8 @@ def predict():
         return jsonify({'error': 'Invalid file type. Please upload JPG, PNG, or WebP images.'}), 400
     
     try:
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        
-        # Process image
-        img = process_image(filepath)
+        # Process image directly from memory
+        img = process_image(file)
         if img is None:
             return jsonify({'error': 'Error processing image'}), 500
         
@@ -124,17 +110,11 @@ def predict():
         # Get fact for the species
         fact = BIRD_FACTS.get(species_key, BIRD_FACTS['default'])
         
-        # Clean up the temporary file
-        try:
-            os.remove(filepath)
-        except:
-            pass
-        
         result = {
             'species': ' '.join(word.capitalize() for word in species.split('_')),
             'confidence': confidence,
             'fact': fact,
-            'image_path': filename
+            'image_path': secure_filename(file.filename)
         }
         
         return render_template('result.html', result=result)
@@ -186,4 +166,4 @@ def health_check():
     return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 3000)))
