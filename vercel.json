@@ -3,11 +3,11 @@
     "builds": [
         {
             "src": "app.py",
-            "use": "@vercel/python",
+            "use": "@vercel/python@3.1.30",
             "config": {
                 "maxLambdaSize": "15mb",
                 "runtime": "python3.9",
-                "installCommand": "pip install --no-cache-dir -r requirements.txt"
+                "installCommand": "python -m pip install --upgrade pip && pip install -r requirements.txt"
             }
         },
         {
@@ -32,6 +32,7 @@
         "PYTHONUNBUFFERED": "1",
         "PYTHONPATH": ".",
         "PIP_TARGET": ".",
-        "PIP_DISABLE_PIP_VERSION_CHECK": "1"
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+        "PYTHON_VERSION": "3.9"
     }
 } 
