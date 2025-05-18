@@ -7,7 +7,7 @@
             "config": {
                 "maxLambdaSize": "15mb",
                 "runtime": "python3.9",
-                "installCommand": "pip install --upgrade pip && pip install -r requirements.txt --no-cache-dir"
+                "installCommand": "pip install --only-binary=:all: -r requirements.txt --no-cache-dir"
             }
         },
         {
@@ -32,7 +32,6 @@
         "PYTHONUNBUFFERED": "1",
         "PYTHONPATH": ".",
         "PIP_NO_CACHE_DIR": "1",
-        "PIP_DISABLE_PIP_VERSION_CHECK": "1",
-        "PYTHON_VERSION": "3.9"
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1"
     }
 } 
