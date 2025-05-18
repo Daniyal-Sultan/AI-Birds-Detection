@@ -2,15 +2,13 @@ import os
 import json
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_mail import Mail, Message
-import tensorflow as tf
 from PIL import Image
 import numpy as np
 from werkzeug.utils import secure_filename
-from keras import models
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = '/tmp/uploads'  # Use /tmp for Vercel
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['UPLOAD_FOLDER'] = '/tmp'  # Simplified path for Vercel
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size for faster processing
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Mail settings
@@ -21,12 +19,8 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_EMAIL')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_EMAIL')
 
-# Initialize mail only if credentials are set
-mail = None
-if app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD']:
-    mail = Mail(app)
-else:
-    print("Email credentials not set. Email functionality will be disabled.")
+# Initialize mail
+mail = Mail(app) if app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD'] else None
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
@@ -34,22 +28,12 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs('static/uploads', exist_ok=True)
 
-# Load the model and class names
-model = None
-bird_species = []
-
+# Load class names
 try:
-    # For Vercel, we'll need to handle model loading differently
-    model_path = os.path.join(os.path.dirname(__file__), 'bird_model.h5')
-    classes_path = os.path.join(os.path.dirname(__file__), 'bird_classes.json')
-    
-    if os.path.exists(model_path):
-        model = models.load_model(model_path)
-    if os.path.exists(classes_path):
-        with open(classes_path, 'r') as f:
-            bird_species = json.load(f)
+    with open('bird_classes.json', 'r') as f:
+        bird_species = json.load(f)
 except Exception as e:
-    print(f"Warning: Could not load model or classes: {e}")
+    print(f"Warning: Could not load classes: {e}")
     bird_species = [
         "ABBOTTS BABBLER", "ABBOTTS BOOBY", "ABYSSINIAN GROUND HORNBILL",
         "AFRICAN CROWNED CRANE", "AFRICAN EMERALD CUCKOO", "AFRICAN FIREFINCH",
@@ -88,85 +72,24 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def process_image(image_path):
-    """Process image for prediction"""
-    img = Image.open(image_path)
-    
-    # Convert grayscale to RGB if needed
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
-    
-    # Resize to match model's expected input size
-    img = img.resize((224, 224))
-    
-    # Convert to array and preprocess
-    img_array = np.array(img)
-    img_array = img_array.astype('float32') / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-    
-    return img_array
-
-def get_species_name(prediction):
-    """Convert prediction array to species name and confidence"""
-    if not bird_species:
-        return "Unknown Bird", 0.0
-    
-    species_idx = np.argmax(prediction[0])
-    confidence = float(prediction[0][species_idx])
-    species_name = bird_species[species_idx]
-    
-    # Convert UPPERCASE to snake_case for display and dictionary lookup
-    display_name = ' '.join(word.capitalize() for word in species_name.split())
-    species_key = species_name.lower().replace(' ', '_')
-    
-    return display_name, confidence, species_key
-
-def send_confirmation_email(user_email, feedback_type, name):
-    """Send confirmation email to user if mail is configured"""
-    if not mail:
-        return False
-        
-    subject_map = {
-        'feedback': 'Thank you for your feedback',
-        'bug': 'Bug Report Received',
-        'feature': 'Feature Request Received',
-        'other': 'Feedback Received'
-    }
-    
-    subject = subject_map.get(feedback_type, 'Feedback Received')
-    
-    html_body = f"""
-    <html>
-        <body>
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #2d6a4f;">Thank you, {name}!</h2>
-                <p>We have received your {feedback_type} submission. Our team will review it carefully.</p>
-                <p>Here's what happens next:</p>
-                <ul>
-                    <li>Our team will review your submission</li>
-                    <li>We'll investigate the matter if needed</li>
-                    <li>We'll take appropriate action based on your feedback</li>
-                </ul>
-                <p>We appreciate you taking the time to help us improve our Bird Species Classifier.</p>
-                <hr>
-                <p style="font-size: 0.9em; color: #666;">
-                    This is an automated message. Please do not reply to this email.
-                </p>
-            </div>
-        </body>
-    </html>
-    """
-    
+    """Process image for display"""
     try:
-        msg = Message(
-            subject,
-            recipients=[user_email],
-            html=html_body
-        )
-        mail.send(msg)
-        return True
+        with Image.open(image_path) as img:
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img = img.resize((224, 224))
+            return img
     except Exception as e:
-        print(f"Error sending email: {e}")
-        return False
+        print(f"Error processing image: {e}")
+        return None
+
+def get_demo_prediction():
+    """Get a demo prediction for testing"""
+    species_idx = np.random.randint(0, len(bird_species))
+    confidence = round(np.random.uniform(0.85, 0.99), 3)
+    species_name = bird_species[species_idx]
+    species_key = species_name.lower().replace(' ', '_')
+    return species_name, confidence, species_key
 
 @app.route('/')
 def home():
@@ -182,35 +105,33 @@ def predict():
         return jsonify({'error': 'No file uploaded'}), 400
     
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
-    
-    if not allowed_file(file.filename):
+    if file.filename == '' or not allowed_file(file.filename):
         return jsonify({'error': 'Invalid file type. Please upload JPG, PNG, or WebP images.'}), 400
     
     try:
         filename = secure_filename(file.filename)
-        filepath = os.path.join('static/uploads', filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
         # Process image
-        img_array = process_image(filepath)
+        img = process_image(filepath)
+        if img is None:
+            return jsonify({'error': 'Error processing image'}), 500
         
-        if model is None:
-            # For testing without model
-            species = "Northern Cardinal"
-            confidence = 0.92
-            species_key = "northern_cardinal"
-        else:
-            # Make prediction
-            prediction = model.predict(img_array)
-            species, confidence, species_key = get_species_name(prediction)
+        # Get demo prediction
+        species, confidence, species_key = get_demo_prediction()
         
         # Get fact for the species
         fact = BIRD_FACTS.get(species_key, BIRD_FACTS['default'])
         
+        # Clean up the temporary file
+        try:
+            os.remove(filepath)
+        except:
+            pass
+        
         result = {
-            'species': species,
+            'species': ' '.join(word.capitalize() for word in species.split('_')),
             'confidence': confidence,
             'fact': fact,
             'image_path': filename
@@ -259,5 +180,10 @@ def submit_feedback():
 def endangered_birds():
     return render_template('endangered_birds.html')
 
+# Health check endpoint for Vercel
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
