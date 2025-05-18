@@ -1,0 +1,8 @@
+Flask==3.0.0
+tensorflow==2.15.0
+Pillow==10.1.0
+numpy==1.24.3
+Werkzeug==3.0.1
+Flask-Mail==0.9.1
+kaggle>=1.5.13
+scipy>=1.11.0 

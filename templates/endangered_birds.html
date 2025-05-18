@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">Endangered Birds Statistics</h1>
+    
+    <!-- Global Statistics Card -->
+    <div class="card mb-5 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">Global Bird Conservation Status</h2>
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h3>1,469</h3>
+                    <p>Threatened Bird Species</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-skull-crossbones fa-3x text-danger mb-3"></i>
+                    <h3>159</h3>
+                    <p>Critically Endangered Species</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-heart fa-3x text-success mb-3"></i>
+                    <h3>16</h3>
+                    <p>Species Saved from Extinction</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Endangered Species -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h3 class="card-title">California Condor</h3>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 85%">
+                            Critically Endangered
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        Population: ~450 individuals<br>
+                        Location: North America<br>
+                        Main Threats: Lead poisoning, habitat loss
+                    </p>
+                    <div class="text-center">
+                        <i class="fas fa-feather fa-4x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h3 class="card-title">Spix's Macaw</h3>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 95%">
+                            Critically Endangered
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        Population: ~160 individuals<br>
+                        Location: Brazil<br>
+                        Main Threats: Illegal trade, deforestation
+                    </p>
+                    <div class="text-center">
+                        <i class="fas fa-dove fa-4x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conservation Success Story -->
+    <div class="card mb-5 shadow">
+        <div class="card-body">
+            <h2 class="card-title">Conservation Success Story</h2>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4>Echo Parakeet</h4>
+                    <p>The Echo Parakeet of Mauritius has made a remarkable recovery from just 12 individuals in the 1980s to over 750 today. This success story demonstrates the power of dedicated conservation efforts and gives hope for other endangered species.</p>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%">
+                            Recovering
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-award fa-5x text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Take Action Section -->
+    <div class="card shadow">
+        <div class="card-body text-center">
+            <h2 class="card-title">Take Action</h2>
+            <p class="lead">Help protect endangered birds by supporting conservation efforts</p>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <i class="fas fa-hand-holding-usd fa-3x text-success mb-3"></i>
+                    <h4>Donate</h4>
+                    <p>Support conservation organizations</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-bullhorn fa-3x text-primary mb-3"></i>
+                    <h4>Spread Awareness</h4>
+                    <p>Share information about endangered birds</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-hands-helping fa-3x text-info mb-3"></i>
+                    <h4>Volunteer</h4>
+                    <p>Join local conservation efforts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

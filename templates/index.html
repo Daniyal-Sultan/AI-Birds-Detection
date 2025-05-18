@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h1 class="card-title mb-4">Bird Species Classifier</h1>
+                <p class="lead">Upload a bird image to identify its species!</p>
+                
+                <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data" id="upload-form">
+                    <div class="upload-container mb-4">
+                        <img id="preview" class="image-preview mb-3" style="display: none;">
+                        <div id="upload-prompt">
+                            <i class="fas fa-feather fa-3x mb-3 text-success"></i>
+                            <p class="mb-3">Drag and drop your image here</p>
+                            <button type="button" class="btn btn-outline-success btn-lg mb-3" onclick="document.getElementById('file-input').click()">
+                                <i class="fas fa-upload"></i> Choose File
+                            </button>
+                        </div>
+                        <input type="file" name="file" id="file-input" class="d-none" accept=".jpg,.jpeg,.png,.webp">
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg" id="submit-btn" disabled>
+                        Identify Bird Species
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="card-title">Instructions</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">1. Upload a clear photo of a single bird</li>
+                    <li class="list-group-item">2. Make sure the bird is the main subject</li>
+                    <li class="list-group-item">3. Supported formats: JPG, PNG, WebP</li>
+                    <li class="list-group-item">4. Maximum file size: 16MB</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <a href="{{ url_for('bird_facts') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-book"></i> Explore Bird Facts
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadContainer = document.querySelector('.upload-container');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('preview');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    const submitBtn = document.getElementById('submit-btn');
+
+    uploadContainer.addEventListener('click', (e) => {
+        if (e.target === uploadContainer) {
+            fileInput.click();
+        }
+    });
+
+    uploadContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadContainer.style.borderColor = '#2d6a4f';
+    });
+
+    uploadContainer.addEventListener('dragleave', () => {
+        uploadContainer.style.borderColor = '#ffffff';
+    });
+
+    uploadContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadContainer.style.borderColor = '#ffffff';
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFileSelect(e.target.files[0]);
+    });
+
+    function handleFileSelect(file) {
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                uploadPrompt.style.display = 'none';
+                submitBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+});
+</script>
+{% endblock %} 

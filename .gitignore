@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# Uploads and temporary files
+uploads/*
+!uploads/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Model checkpoints and large files
+*.h5
+*.hdf5
+*.pkl
+
+# Environment variables
+.env
+
+# Dataset
+dataset/
+
+# Misc
+.DS_Store
+Thumbs.db 

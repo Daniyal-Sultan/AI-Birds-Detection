@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h2 class="card-title mb-4">Bird Species Identification Results</h2>
+                
+                <div class="mb-4">
+                    <img src="{{ url_for('static', filename='uploads/' + result.image_path) }}" 
+                         alt="Uploaded bird image" 
+                         class="image-preview mb-3">
+                </div>
+
+                <div class="result-details">
+                    <h3 class="text-success mb-3">{{ result.species }}</h3>
+                    
+                    <div class="confidence-meter mb-4">
+                        <p class="mb-2">Confidence Level</p>
+                        <div class="progress">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 style="width: {{ result.confidence * 100 }}%"
+                                 aria-valuenow="{{ result.confidence * 100 }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ "%.1f"|format(result.confidence * 100) }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fun-fact card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Fun Fact</h5>
+                            <p class="card-text">{{ result.fact }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('home') }}" class="btn btn-success btn-lg">
+                        Identify Another Bird
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
