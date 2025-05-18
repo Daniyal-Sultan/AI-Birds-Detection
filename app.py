@@ -9,9 +9,9 @@ from werkzeug.utils import secure_filename
 from keras import models
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = '/tmp/uploads'  # Use /tmp for Vercel
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-app.secret_key = 'your-secret-key-here'  # Required for flash messages
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Mail settings
 app.config['MAIL_SERVER'] = 'smtp.office365.com'
@@ -39,16 +39,24 @@ model = None
 bird_species = []
 
 try:
-    model = models.load_model('bird_model.h5')
-    with open('bird_classes.json', 'r') as f:
-        bird_species = json.load(f)
+    # For Vercel, we'll need to handle model loading differently
+    model_path = os.path.join(os.path.dirname(__file__), 'bird_model.h5')
+    classes_path = os.path.join(os.path.dirname(__file__), 'bird_classes.json')
+    
+    if os.path.exists(model_path):
+        model = models.load_model(model_path)
+    if os.path.exists(classes_path):
+        with open(classes_path, 'r') as f:
+            bird_species = json.load(f)
 except Exception as e:
     print(f"Warning: Could not load model or classes: {e}")
-    # Fallback to example classes if needed
     bird_species = [
-        'northern_cardinal', 'american_robin', 'blue_jay',
-        'house_sparrow', 'american_goldfinch', 'black_capped_chickadee',
-        'tufted_titmouse', 'european_starling', 'house_finch', 'mourning_dove'
+        "ABBOTTS BABBLER", "ABBOTTS BOOBY", "ABYSSINIAN GROUND HORNBILL",
+        "AFRICAN CROWNED CRANE", "AFRICAN EMERALD CUCKOO", "AFRICAN FIREFINCH",
+        "AFRICAN OYSTER CATCHER", "AFRICAN PIED HORNBILL", "AFRICAN PYGMY GOOSE",
+        "ALBATROSS", "ALBERTS TOWHEE", "ALEXANDRINE PARAKEET", "ALPINE CHOUGH",
+        "ALTAMIRA YELLOWTHROAT", "AMERICAN AVOCET", "AMERICAN BITTERN",
+        "AMERICAN COOT", "AMERICAN FLAMINGO", "AMERICAN GOLDFINCH", "AMERICAN KESTREL"
     ]
 
 # Bird facts dictionary
